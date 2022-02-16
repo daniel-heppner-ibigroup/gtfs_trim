@@ -13,8 +13,8 @@ with open('gtfs/trips.txt', 'r+') as trips:
   trips_reader = csv.DictReader(trips)
   data = list(trips_reader)
   before_size = len(data)
-  for i, row in enumerate(data):
-    if i > 0 and row['route_id'] in route_ids:
+  for row in data:
+    if row['route_id'] in route_ids:
       newtrips.append(row)
       trip_ids.append(row['trip_id'])
 
@@ -31,8 +31,8 @@ with open('gtfs/stop_times.txt', 'r+') as stop_times:
   stop_times_reader = csv.DictReader(stop_times)
   data = list(stop_times_reader)
   before_size = len(data)
-  for i, row in enumerate(data):
-    if i > 0 and row['trip_id'] in trip_ids:
+  for row in data:
+    if row['trip_id'] in trip_ids:
       new_stop_times.append(row)
       stop_ids.append(row['stop_id'])
 
@@ -48,13 +48,28 @@ with open('gtfs/stops.txt', 'r+') as stops:
   stops_reader = csv.DictReader(stops)
   data = list(stops_reader)
   before_size = len(data)
-  for i, row in enumerate(data):
-    if i > 0 and row['stop_id'] in stop_ids:
+  for row in data:
+    if row['stop_id'] in stop_ids:
       new_stops.append(row)
-
   stops.seek(0)
   stops.truncate()
   stops_writer = csv.DictWriter(stops, fieldnames=stops_reader.fieldnames)
   stops_writer.writeheader()
   stops_writer.writerows(new_stops)
   print(f'Removed {before_size - len(new_stops)} rows from stops.txt (out of {before_size}).')
+
+with open('gtfs/transfers.txt', 'r+') as transfers:
+  new_transfers = []
+  transfers_reader = csv.DictReader(transfers)
+  data = list(transfers_reader)
+  before_size = len(data)
+  for row in data:
+    if row['to_stop_id'] in stop_ids and row['from_stop_id'] in stop_ids:
+      new_transfers.append(row)
+  transfers.seek(0)
+  transfers.truncate()
+  transfers_writer = csv.DictWriter(transfers, fieldnames=transfers_reader.fieldnames)
+  transfers_writer.writeheader()
+  transfers_writer.writerows(new_transfers)
+  print(f'Removed {before_size - len(new_transfers)} rows from transfers.txt (out of {before_size}).')
+
